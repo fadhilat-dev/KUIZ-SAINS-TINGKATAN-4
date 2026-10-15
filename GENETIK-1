@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuiz Sains Tingkatan 4: Bab 5 Genetik</title>
+<style>
+  :root { --navy:#16324f; --blue:#2364aa; --pale:#eef5ff; --green:#16794b; --red:#b42318; --border:#d7e0ea; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Arial,Helvetica,sans-serif; background:#f4f7fb; color:#1c2733; line-height:1.5; }
+  .container { max-width:900px; margin:28px auto; padding:0 16px 36px; }
+  header { background:linear-gradient(135deg,#16324f,#2364aa); color:white; padding:26px; border-radius:16px; margin-bottom:18px; }
+  h1 { margin:0 0 8px; font-size:clamp(1.5rem,4vw,2.15rem); }
+  header p { margin:4px 0; }
+  .toolbar { display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin:14px 0; }
+  .progress-wrap { flex:1; min-width:200px; }
+  .progress-label { display:flex; justify-content:space-between; font-size:.92rem; margin-bottom:6px; }
+  .progress { height:9px; background:#dfe7f0; border-radius:999px; overflow:hidden; }
+  .progress-bar { height:100%; width:0; background:#2364aa; transition:width .2s; }
+  .card { background:white; border:1px solid var(--border); border-radius:13px; padding:20px; margin:14px 0; box-shadow:0 3px 12px #16324f0a; }
+  .q-head { display:flex; gap:10px; align-items:flex-start; }
+  .q-number { flex:0 0 36px; height:36px; display:grid; place-items:center; border-radius:9px; background:var(--pale); color:var(--navy); font-weight:700; }
+  .q-text { margin:4px 0 14px; font-weight:600; }
+  .options { display:grid; gap:9px; }
+  .option { display:flex; gap:10px; align-items:flex-start; padding:11px 12px; border:1px solid var(--border); border-radius:9px; cursor:pointer; }
+  .option:hover { background:#f7faff; border-color:#91b4df; }
+  .option input { margin-top:5px; accent-color:var(--blue); }
+  .option.correct { background:#edf9f1; border-color:#77c99b; }
+  .option.incorrect { background:#fff0ef; border-color:#e8a19c; }
+  .feedback { margin-top:12px; padding:10px 12px; border-radius:8px; font-size:.94rem; }
+  .feedback.good { background:#edf9f1; color:#135c39; }
+  .feedback.bad { background:#fff0ef; color:#8c1d18; }
+  .section { color:var(--blue); font-size:.86rem; text-transform:uppercase; letter-spacing:.04em; font-weight:700; margin-bottom:8px; }
+  button { border:0; border-radius:9px; padding:12px 17px; font-weight:700; cursor:pointer; font-size:.98rem; }
+  button:focus-visible, input:focus-visible { outline:3px solid #91b4df; outline-offset:2px; }
+  .primary { background:var(--blue); color:white; }
+  .secondary { background:#e7edf5; color:var(--navy); }
+  button:disabled { opacity:.55; cursor:not-allowed; }
+  #result { display:none; }
+  .score { font-size:2rem; font-weight:800; color:var(--navy); }
+  .result-detail { color:#455468; }
+  footer { color:#617084; font-size:.85rem; text-align:center; margin-top:24px; }
+  @media (max-width:600px) { .card{padding:15px;} header{padding:21px;} .toolbar button{width:100%;} }
+  @media print { body{background:white;} header{background:white;color:black;border:1px solid #bbb;} .toolbar, #actions, footer{display:none!important;} .card{break-inside:avoid;box-shadow:none;} }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Kuiz Sains Tingkatan 4: Bab 5 — Genetik</h1>
+    <p>30 soalan aneka pilihan • Aras sederhana • KSSM</p>
+    <p>Pilih satu jawapan bagi setiap soalan, kemudian tekan <strong>Semak Jawapan</strong> untuk melihat markah dan maklum balas.</p>
+  </header>
+
+  <div class="toolbar">
+    <div class="progress-wrap">
+      <div class="progress-label"><span id="answeredText">Dijawab: 0 daripada 30</span><span id="progressPct">0%</span></div>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+    <button class="secondary" id="resetTop" type="button">Mula Semula</button>
+  </div>
+
+  <div id="quiz"></div>
+
+  <div class="toolbar" id="actions">
+    <button class="primary" id="checkBtn" type="button">Semak Jawapan</button>
+    <button class="secondary" id="resetBottom" type="button">Kosongkan Jawapan</button>
+  </div>
+
+  <section class="card" id="result" aria-live="polite">
+    <h2>Keputusan Kuiz</h2>
+    <div class="score" id="scoreText"></div>
+    <p class="result-detail" id="resultDetail"></p>
+    <button class="primary" type="button" id="reviewBtn">Lihat Semula Jawapan</button>
+  </section>
+
+  <footer>Berdasarkan nota PowerPoint Bab 5: Genetik, Sains Tingkatan 4 KSSM.</footer>
+</div>
+
+<script>
+const questions = [
+  {section:"5.1 Pembahagian Sel", q:"Antara berikut, yang manakah merupakan fungsi utama DNA dalam organisma?", options:["Menghasilkan tenaga untuk sel","Menyimpan maklumat genetik organisma","Mengangkut oksigen ke seluruh badan","Mengawal pergerakan bahan merentasi membran sel"], a:1, why:"DNA menyimpan maklumat genetik yang diwariskan dan membantu menentukan ciri organisma."},
+  {section:"5.1 Pembahagian Sel", q:"Apakah komponen yang membentuk satu nukleotida DNA?", options:["Gula deoksiribosa, bes bernitrogen dan kumpulan fosfat","Gula glukosa, asid amino dan kumpulan fosfat","Gula deoksiribosa, protein dan asid amino","Gula glukosa, bes bernitrogen dan protein"], a:0, why:"Setiap nukleotida terdiri daripada gula deoksiribosa, bes bernitrogen dan kumpulan fosfat."},
+  {section:"5.1 Pembahagian Sel", q:"Sel soma manusia yang normal mempunyai 46 kromosom. Berapakah bilangan kromosom dalam setiap sel anak yang terhasil melalui mitosis?", options:["23","44","46","92"], a:2, why:"Mitosis menghasilkan sel anak yang mempunyai bilangan kromosom yang sama dengan sel induk, iaitu 46."},
+  {section:"5.1 Pembahagian Sel", q:"Apakah kepentingan mitosis pada hujung akar tumbuhan?", options:["Menghasilkan gamet untuk pembiakan seks","Mengurangkan bilangan kromosom kepada separuh","Menghasilkan sel anak yang tidak seiras","Membolehkan akar tumbuh dengan menghasilkan sel baharu"], a:3, why:"Mitosis di tisu meristem hujung akar menghasilkan sel baharu untuk pertumbuhan."},
+  {section:"5.1 Pembahagian Sel", q:"Apakah hasil akhir meiosis daripada satu sel induk manusia?", options:["Dua sel seiras dengan 46 kromosom setiap satu","Empat sel tidak seiras dengan 23 kromosom setiap satu","Empat sel seiras dengan 46 kromosom setiap satu","Dua sel tidak seiras dengan 23 kromosom setiap satu"], a:1, why:"Meiosis menghasilkan empat sel anak yang tidak seiras, setiap satu dengan separuh bilangan kromosom sel induk."},
+  {section:"5.1 Pembahagian Sel", q:"Proses pembahagian sel yang membantu menggantikan sel kulit yang rosak ialah", options:["persenyawaan","meiosis","mitosis","mutasi"], a:2, why:"Mitosis menggantikan sel yang rosak atau mati dan membantu pembaikan tisu."},
+  {section:"5.2 Pewarisan", q:"Sepasang gen yang terletak pada lokus yang sama pada kromosom homolog dikenali sebagai", options:["alel","gamet","kromatid","nukleotida"], a:0, why:"Alel ialah bentuk gen yang berada pada lokus yang sama pada kromosom homolog."},
+  {section:"5.2 Pewarisan", q:"Alel T mewakili trait tinggi dan t mewakili trait rendah. Jika T dominan terhadap t, apakah fenotip pokok bergenotip Tt?", options:["Rendah kerana mempunyai alel resesif","Rendah kerana kedua-dua alel berbeza","Tinggi dan rendah pada masa yang sama","Tinggi kerana alel dominan menutupi kesan alel resesif"], a:3, why:"Alel dominan T mempamerkan trait tinggi walaupun alel resesif t hadir."},
+  {section:"5.2 Pewarisan", q:"Pokok tinggi berbaka tulen (TT) dikacukkan dengan pokok kerdil berbaka tulen (tt). Apakah genotip semua anak F1?", options:["TT","Tt","tt","TTT"], a:1, why:"Induk TT hanya menyumbang alel T dan induk tt hanya menyumbang alel t, maka semua anak ialah Tt."},
+  {section:"5.2 Pewarisan", q:"Dua pokok kacang pea heterozigot (Tt) dikacukkan. Apakah kebarangkalian anak yang terhasil mempunyai fenotip kerdil?", options:["0%","25%","50%","75%"], a:1, why:"Kacukan Tt × Tt menghasilkan nisbah genotip 1 TT : 2 Tt : 1 tt. Hanya tt kerdil, iaitu 1 daripada 4 atau 25%."},
+  {section:"5.2 Pewarisan", q:"Apakah jenis kromosom seks yang boleh dibawa oleh sperma manusia selepas meiosis?", options:["X atau Y","X sahaja","Y sahaja","XX atau XY"], a:0, why:"Sperma membawa 23 kromosom, termasuk sama ada kromosom seks X atau Y."},
+  {section:"5.2 Pewarisan", q:"Ovum yang membawa kromosom seks X disenyawakan oleh sperma yang membawa kromosom seks Y. Apakah kromosom seks zigot?", options:["XX","XO","XY","YY"], a:2, why:"Gabungan X daripada ovum dan Y daripada sperma membentuk zigot XY."},
+  {section:"5.3 Mutasi", q:"Mutasi ditakrifkan sebagai", options:["pemindahan ciri daripada ibu bapa kepada anak","pembentukan sel anak melalui mitosis","penggabungan dua gamet semasa persenyawaan","perubahan spontan dan rawak yang berlaku pada gen atau kromosom"], a:3, why:"Mutasi ialah perubahan spontan dan rawak pada gen atau kromosom yang boleh mengubah ciri."},
+  {section:"5.3 Mutasi", q:"Seseorang mempunyai 47 kromosom akibat penambahan satu kromosom pada pasangan kromosom ke-21. Keadaan ini ialah", options:["sindrom Turner","sindrom Down","sindrom Klinefelter","talasemia"], a:1, why:"Sindrom Down dikaitkan dengan penambahan satu kromosom pada pasangan ke-21, menjadikan jumlah 47."},
+  {section:"5.3 Mutasi", q:"Seorang perempuan mempunyai 45 kromosom dengan susunan kromosom seks XO. Keadaan ini dikenali sebagai", options:["sindrom Turner","sindrom Down","sindrom Klinefelter","anemia sel sabit"], a:0, why:"Sindrom Turner melibatkan kehilangan satu kromosom X dan jumlah 45 kromosom (44 + XO)."},
+  {section:"5.3 Mutasi", q:"Apakah perbezaan antara mutasi gen dengan mutasi kromosom?", options:["Mutasi gen hanya berlaku pada tumbuhan","Mutasi gen sentiasa diwarisi, tetapi mutasi kromosom tidak boleh diwarisi","Mutasi gen melibatkan perubahan kimia pada gen, manakala mutasi kromosom melibatkan perubahan bilangan atau struktur kromosom","Mutasi gen mengubah bilangan kromosom, manakala mutasi kromosom hanya mengubah warna mata"], a:2, why:"Mutasi gen melibatkan perubahan pada gen, manakala mutasi kromosom melibatkan bilangan atau struktur kromosom."},
+  {section:"5.3 Mutasi", q:"Buta warna merah-hijau berkaitan dengan", options:["mutasi kromosom pada pasangan ke-21","gen resesif pada kromosom X","gen resesif autosom yang menghasilkan sel darah merah berbentuk sabit","kehilangan satu kromosom X pada perempuan"], a:1, why:"Menurut nota, buta warna merah-hijau dikawal oleh gen mutan resesif pada kromosom X dan lazim berlaku pada lelaki."},
+  {section:"5.3 Mutasi", q:"Mutasi pada gen yang menghasilkan hemoglobin menyebabkan sel darah merah berbentuk sabit dan menjejaskan pengangkutan oksigen. Penyakit ini ialah", options:["hemofilia","talasemia","buta warna","anemia sel sabit"], a:3, why:"Anemia sel sabit menyebabkan sel darah merah berbentuk sabit yang menjejaskan pengangkutan oksigen."},
+  {section:"5.4 Teknologi Kejuruteraan Genetik", q:"Apakah yang dimaksudkan dengan kejuruteraan genetik?", options:["Pengubahsuaian genetik sesuatu organisma","Pembiakan organisma melalui mitosis sahaja","Pengelasan kromosom mengikut bentuk dan saiz","Pengukuran variasi fizikal dalam populasi"], a:0, why:"Kejuruteraan genetik ialah istilah bagi pengubahsuaian genetik sesuatu organisma."},
+  {section:"5.4 Teknologi Kejuruteraan Genetik", q:"Apakah contoh aplikasi teknologi DNA rekombinan yang dinyatakan dalam nota?", options:["Menghasilkan sel kulit baharu melalui mitosis","Mengukur ketinggian manusia dalam populasi","Menghasilkan insulin manusia melalui bakteria","Menentukan bilangan kromosom dalam sel soma"], a:2, why:"DNA manusia boleh dikombinasikan dengan bahan genetik bakteria untuk menghasilkan insulin manusia."},
+  {section:"5.4 Teknologi Kejuruteraan Genetik", q:"Tanaman diubah suai secara genetik supaya lebih tahan terhadap serangan serangga perosak. Apakah manfaat yang mungkin diperoleh?", options:["Menambahkan bilangan kromosom tanaman","Mengurangkan penggunaan racun perosak","Menghapuskan semua variasi tanaman","Menghalang pembahagian sel tanaman"], a:1, why:"Tanaman tahan perosak boleh mengurangkan penggunaan racun perosak dan seterusnya membantu mengurangkan pencemaran alam sekitar."},
+  {section:"5.4 Teknologi Kejuruteraan Genetik", q:"Apakah tujuan utama terapi gen seperti yang diterangkan dalam nota?", options:["Menghasilkan organisma yang mempunyai lebih banyak kromosom","Menentukan salasilah keluarga melalui ujian DNA","Mengenal pasti individu melalui bukti fizikal di tempat kejadian","Menggantikan gen yang rosak dengan gen normal dalam sel atau tisu pesakit"], a:3, why:"Terapi gen bertujuan membaiki gen mutan dengan menyisipkan gen normal ke dalam sel atau tisu pesakit."},
+  {section:"5.4 Teknologi Kejuruteraan Genetik", q:"Analisis DNA daripada bukti di tempat kejadian digunakan untuk membantu penyiasatan jenayah. Aplikasi ini dikenali sebagai", options:["sains forensik","terapi gen","genealogi genetik","pembiakbakaan pilihan"], a:0, why:"Sains forensik menggunakan analisis bukti saintifik untuk membantu penyiasatan jenayah."},
+  {section:"5.4 Teknologi Kejuruteraan Genetik", q:"Yang manakah merupakan isu etika dalam teknologi kejuruteraan genetik?", options:["Menggunakan DNA untuk menyiasat jenayah","Menghasilkan insulin untuk membantu pesakit diabetes","Menyalahgunakan pengubahsuaian genetik untuk menghasilkan senjata biologi","Menghasilkan tanaman yang tahan terhadap penyakit"], a:2, why:"Penyalahgunaan teknologi genetik untuk menghasilkan senjata biologi merupakan kebimbangan etika."},
+  {section:"5.5 Variasi", q:"Ketinggian dan jisim badan manusia menunjukkan perbezaan beransur-ansur dalam populasi. Ini ialah contoh", options:["variasi tak selanjar","variasi selanjar","mutasi kromosom","pewarisan terangkai seks"], a:1, why:"Ketinggian dan jisim badan ialah variasi selanjar yang boleh diukur dan menunjukkan julat nilai."},
+  {section:"5.5 Variasi", q:"Pengelasan individu berdasarkan kumpulan darah A, B, AB dan O ialah contoh", options:["variasi selanjar kerana nilainya boleh diukur","variasi selanjar kerana dipengaruhi persekitaran","variasi selanjar kerana ditunjukkan oleh lengkung taburan normal","variasi tak selanjar kerana mempunyai kategori yang jelas"], a:3, why:"Kumpulan darah mempunyai kategori yang berasingan dan jelas, maka tergolong dalam variasi tak selanjar."},
+  {section:"5.5 Variasi", q:"Apakah graf yang paling sesuai untuk mewakili data variasi tak selanjar?", options:["Carta bar","Lengkung taburan normal","Graf garis perubahan berterusan","Graf suhu melawan masa"], a:0, why:"Nota menyatakan variasi tak selanjar diwakili oleh graf diskrit dan carta bar."},
+  {section:"5.5 Variasi", q:"Warna kulit dipengaruhi oleh gen yang diwarisi dan juga faktor persekitaran. Ini menunjukkan bahawa variasi selanjar", options:["ditentukan oleh persekitaran sahaja","ditentukan oleh mutasi kromosom sahaja","boleh dipengaruhi oleh faktor genetik dan persekitaran","tidak boleh diwarisi daripada ibu bapa"], a:2, why:"Variasi selanjar ditentukan oleh gen dan boleh turut dipengaruhi faktor persekitaran."},
+  {section:"5.5 Variasi", q:"Dalam populasi haiwan, variasi warna badan membantu sesetengah individu mengelakkan pemangsa apabila persekitaran berubah. Apakah kepentingan variasi?", options:["Menghapuskan semua perbezaan antara individu","Membantu organisma menyesuaikan diri dan bermandiri","Memastikan semua individu mempunyai genotip yang sama","Menghalang organisma daripada membiak"], a:1, why:"Variasi membolehkan sesetengah organisma menyesuaikan diri dan terus bermandiri apabila persekitaran berubah."},
+  {section:"5.5 Variasi", q:"Pertimbangkan ciri berikut: P—ketinggian manusia; Q—kebolehan menggulung lidah; R—jisim badan; S—jenis kumpulan darah. Pengelasan manakah betul berdasarkan nota?", options:["Selanjar: Q dan S; tak selanjar: P dan R","Selanjar: P dan Q; tak selanjar: R dan S","Selanjar: P dan S; tak selanjar: Q dan R","Selanjar: P dan R; tak selanjar: Q dan S"], a:3, why:"Ketinggian dan jisim badan ialah variasi selanjar; kebolehan menggulung lidah dan kumpulan darah ialah variasi tak selanjar."}
+];
+
+const quizEl = document.getElementById("quiz");
+const letters = ["A","B","C","D"];
+let submitted = false;
+
+function renderQuiz() {
+  quizEl.innerHTML = questions.map((item, i) => `
+    <section class="card question-card" id="card-${i}">
+      <div class="section">${item.section}</div>
+      <div class="q-head">
+        <div class="q-number">${i+1}</div>
+        <div style="flex:1">
+          <p class="q-text">${item.q}</p>
+          <div class="options">
+            ${item.options.map((opt,j) => `
+              <label class="option" id="opt-${i}-${j}">
+                <input type="radio" name="q${i}" value="${j}" aria-label="Pilihan ${letters[j]}">
+                <span><strong>${letters[j]}.</strong> ${opt}</span>
+              </label>`).join("")}
+          </div>
+          <div class="feedback" id="feedback-${i}" hidden></div>
+        </div>
+      </div>
+    </section>`).join("");
+  quizEl.querySelectorAll('input[type="radio"]').forEach(input => input.addEventListener("change", updateProgress));
+  updateProgress();
+}
+
+function updateProgress() {
+  const answered = questions.filter((_,i) => document.querySelector(`input[name="q${i}"]:checked`)).length;
+  document.getElementById("answeredText").textContent = `Dijawab: ${answered} daripada ${questions.length}`;
+  document.getElementById("progressPct").textContent = `${Math.round(answered/questions.length*100)}%`;
+  document.getElementById("progressBar").style.width = `${answered/questions.length*100}%`;
+}
+
+function checkAnswers() {
+  if (submitted) {
+    document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"});
+    return;
+  }
+  const unanswered = questions.reduce((arr,q,i) => {
+    if (!document.querySelector(`input[name="q${i}"]:checked`)) arr.push(i+1);
+    return arr;
+  }, []);
+  if (unanswered.length) {
+    const proceed = confirm(`Anda belum menjawab ${unanswered.length} soalan (${unanswered.slice(0,8).join(", ")}${unanswered.length>8?"…":""}). Soalan yang tidak dijawab akan mendapat 0 markah. Teruskan semakan?`);
+    if (!proceed) {
+      const first = unanswered[0];
+      document.getElementById(`card-${first-1}`).scrollIntoView({behavior:"smooth",block:"center"});
+      return;
+    }
+  }
+  submitted = true;
+  let score = 0;
+  questions.forEach((item,i) => {
+    const chosen = document.querySelector(`input[name="q${i}"]:checked`);
+    const chosenValue = chosen ? Number(chosen.value) : -1;
+    const correct = chosenValue === item.a;
+    if (correct) score++;
+    item.options.forEach((_,j) => {
+      const label = document.getElementById(`opt-${i}-${j}`);
+      if (j === item.a) label.classList.add("correct");
+      if (j === chosenValue && !correct) label.classList.add("incorrect");
+    });
+    const fb = document.getElementById(`feedback-${i}`);
+    fb.hidden = false;
+    fb.className = `feedback ${correct ? "good" : "bad"}`;
+    fb.textContent = `${correct ? "Betul." : `Belum tepat. Jawapan: ${letters[item.a]}.`} ${item.why}`;
+    if (chosen) chosen.disabled = true;
+  });
+  document.getElementById("scoreText").textContent = `${score} / ${questions.length} (${Math.round(score/questions.length*100)}%)`;
+  let message = score >= 27 ? "Cemerlang! Penguasaan anda sangat baik." :
+                score >= 22 ? "Bagus! Semak semula beberapa konsep yang masih kurang kukuh." :
+                score >= 15 ? "Usaha yang baik. Ulang kaji topik dan baca maklum balas setiap soalan." :
+                "Teruskan usaha. Ulang kaji nota Bab 5 dan cuba kuiz ini sekali lagi.";
+  document.getElementById("resultDetail").textContent = `${message} Jawapan betul: ${score}; jawapan salah atau tidak dijawab: ${questions.length-score}.`;
+  document.getElementById("result").style.display = "block";
+  document.getElementById("checkBtn").textContent = "Lihat Keputusan";
+  document.getElementById("checkBtn").disabled = false;
+  document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function resetQuiz() {
+  if (submitted || document.querySelector('input[type="radio"]:checked')) {
+    if (!confirm("Kosongkan semua jawapan dan mulakan semula kuiz?")) return;
+  }
+  submitted = false;
+  document.getElementById("result").style.display = "none";
+  document.getElementById("checkBtn").textContent = "Semak Jawapan";
+  questions.forEach((_,i) => {
+    document.querySelectorAll(`input[name="q${i}"]`).forEach(input => { input.checked = false; input.disabled = false; });
+    document.querySelectorAll(`#card-${i} .option`).forEach(label => label.classList.remove("correct","incorrect"));
+    const fb = document.getElementById(`feedback-${i}`);
+    fb.hidden = true; fb.textContent = ""; fb.className = "feedback";
+  });
+  updateProgress();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.getElementById("checkBtn").addEventListener("click",checkAnswers);
+document.getElementById("resetTop").addEventListener("click",resetQuiz);
+document.getElementById("resetBottom").addEventListener("click",resetQuiz);
+document.getElementById("reviewBtn").addEventListener("click",() => {
+  document.getElementById("card-0").scrollIntoView({behavior:"smooth",block:"start"});
+});
+renderQuiz();
+</script>
+</body>
+</html>
