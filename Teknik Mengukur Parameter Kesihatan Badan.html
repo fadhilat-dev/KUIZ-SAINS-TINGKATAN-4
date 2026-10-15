@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuiz Sains Tingkatan 4 - Bab 3</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #eef4fa;
+  margin: 0;
+  padding: 20px;
+  color: #203047;
+}
+.container {
+  max-width: 800px;
+  margin: auto;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px #0001;
+}
+h1 { color: #176b87; text-align: center; }
+.subtitle { text-align: center; color: #64748b; }
+.question {
+  padding: 15px;
+  margin: 15px 0;
+  background: #f5f9ff;
+  border-radius: 10px;
+}
+.question p { font-weight: bold; }
+label {
+  display: block;
+  padding: 8px;
+  cursor: pointer;
+}
+button {
+  background: #176b87;
+  color: white;
+  border: 0;
+  padding: 12px 20px;
+  margin: 8px 5px 8px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+button:hover { background: #10536a; }
+#result {
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: bold;
+}
+.correct { color: green; }
+.wrong { color: #c62828; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>KUiz SAINS TINGKATAN 4</h1>
+<p class="subtitle">
+Bab 3: Teknik Mengukur Parameter Kesihatan Badan<br>
+10 Soalan Objektif | Aras Sederhana
+</p>
+
+<form id="quiz"></form>
+
+<button onclick="checkAnswers()" type="button">
+Semak Jawapan
+</button>
+<button onclick="location.reload()" type="button">
+Cuba Semula
+</button>
+
+<div id="result"></div>
+<div id="feedback"></div>
+</div>
+
+<script>
+const questions = [
+{
+q:"Mengapakah termometer klinik perlu berada di bawah 35°C sebelum digunakan?",
+o:["A. Mengelakkan termometer pecah",
+"B. Memastikan bacaan suhu badan dapat diukur dengan betul",
+"C. Menyejukkan badan individu",
+"D. Memanjangkan tempoh penggunaan"],
+a:1
+},
+{
+q:"Mengapakah termometer makmal kurang sesuai untuk mengukur suhu badan?",
+o:["A. Tidak mempunyai skala suhu",
+"B. Hanya mengukur suhu tinggi",
+"C. Tidak mempunyai bahagian pencerutan pada turus merkuri",
+"D. Tidak boleh digunakan di dalam mulut"],
+a:2
+},
+{
+q:"Apakah faktor yang mungkin menyebabkan suhu badan meningkat selepas aktiviti sukan?",
+o:["A. Tidur mencukupi","B. Senaman",
+"C. Berehat di tempat sejuk","D. Minum air kosong"],
+a:1
+},
+{
+q:"Mengapakah pergelangan tangan sering digunakan untuk mengukur denyutan nadi?",
+o:["A. Kulitnya paling nipis",
+"B. Arteri dekat dengan permukaan kulit",
+"C. Jantung menghantar lebih banyak darah",
+"D. Nadi hanya boleh dirasai di situ"],
+a:1
+},
+{
+q:"Seorang murid mengira 84 denyutan dalam satu minit. Berapakah kadar denyutan nadinya?",
+o:["A. 42 denyutan/minit","B. 64 denyutan/minit",
+"C. 84 denyutan/minit","D. 168 denyutan/minit"],
+a:2
+},
+{
+q:"Apakah alat yang digunakan untuk mengukur tekanan darah?",
+o:["A. Termometer klinik","B. Sfigmomanometer",
+"C. Termometer inframerah","D. Penimbang digital"],
+a:1
+},
+{
+q:"Bacaan tekanan darah ialah 120/80 mmHg. Apakah maksud nombor 120?",
+o:["A. Tekanan diastolik","B. Kadar denyutan nadi",
+"C. Tekanan sistolik","D. Indeks Jisim Badan"],
+a:2
+},
+{
+q:"Dalam bacaan tekanan darah 130/85 mmHg, apakah maksud nombor 85?",
+o:["A. Tekanan ketika jantung mengecut",
+"B. Tekanan ketika jantung berehat antara denyutan",
+"C. Bilangan degupan jantung seminit",
+"D. Suhu badan ketika berehat"],
+a:1
+},
+{
+q:"Jisim badan seorang murid ialah 60 kg dan ketinggiannya 1.5 m. Hitungkan BMI.",
+o:["A. 20.0 kg m⁻²","B. 25.0 kg m⁻²",
+"C. 26.7 kg m⁻²","D. 40.0 kg m⁻²"],
+a:2
+},
+{
+q:"Apakah amalan yang sesuai untuk menurunkan jisim badan secara sihat?",
+o:["A. Mengelakkan semua makanan",
+"B. Mengambil makanan tinggi gula setiap hari",
+"C. Bersenam secara konsisten dan mengamalkan pemakanan sihat",
+"D. Mengurangkan waktu tidur"],
+a:2
+}
+];
+
+const quiz = document.getElementById("quiz");
+
+questions.forEach((item, i) => {
+  const section = document.createElement("div");
+  section.className = "question";
+  section.innerHTML = `<p>${i+1}. ${item.q}</p>` +
+    item.o.map((option, j) =>
+      `<label><input type="radio" name="q${i}" value="${j}">
+      ${option}</label>`
+    ).join("");
+  quiz.appendChild(section);
+});
+
+function checkAnswers() {
+  let score = 0;
+  let feedback = "";
+
+  questions.forEach((item, i) => {
+    const selected = document.querySelector(
+      `input[name="q${i}"]:checked`
+    );
+    const section = quiz.children[i];
+
+    section.querySelectorAll(".mark").forEach(el => el.remove());
+
+    if (selected && Number(selected.value) === item.a) {
+      score++;
+      section.insertAdjacentHTML(
+        "beforeend",
+        '<p class="mark correct">Betul!</p>'
+      );
+    } else {
+      section.insertAdjacentHTML(
+        "beforeend",
+        `<p class="mark wrong">Jawapan: ${item.o[item.a]}</p>`
+      );
+    }
+  });
+
+  document.getElementById("result").textContent =
+    `Markah anda: ${score}/10`;
+
+  document.getElementById("feedback").textContent =
+    score >= 8 ? "Cemerlang! Teruskan usaha." :
+    score >= 5 ? "Baik! Teruskan ulang kaji." :
+    "Teruskan berlatih dan ulang kaji Bab 3.";
+}
+</script>
+</body>
+</html>
