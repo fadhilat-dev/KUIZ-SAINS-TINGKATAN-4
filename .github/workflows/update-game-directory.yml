@@ -1,0 +1,133 @@
+
+name: Update Game Directory
+
+on:
+  push:
+    paths:
+      - '**/*.html'
+      - '.github/workflows/update-game-directory.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-game-directory
+  cancel-in-progress: false
+
+jobs:
+  update-directory:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out latest files
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Update game list (newest first)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import subprocess
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+          from urllib.parse import quote
+
+          owner, repo = os.environ['GITHUB_REPOSITORY'].split('/', 1)
+          if repo.lower() == f'{owner.lower()}.github.io':
+              base = f'https://{owner}.github.io/'
+          else:
+              base = f'https://{owner}.github.io/{repo}/'
+
+          start = '<!-- AUTO-GAMES:START -->'
+          end = '<!-- AUTO-GAMES:END -->'
+          my_time = timezone(timedelta(hours=8))
+
+          def last_updated(path):
+              result = subprocess.run(
+                  ['git', 'log', '-1', '--format=%ct', '--', path.as_posix()],
+                  capture_output=True, text=True, check=True
+              ).stdout.strip()
+              return int(result) if result else 0
+
+          games = []
+          for path in Path('.').rglob('*.html'):
+              if any(part.startswith('.') for part in path.parts):
+                  continue
+              if path.name.lower() in ('index.html', '404.html'):
+                  continue
+              if not path.is_file():
+                  continue
+              games.append((last_updated(path), path))
+
+          games.sort(
+              key=lambda item: (item[0], item[1].as_posix()),
+              reverse=True
+          )
+
+          lines = [
+              start,
+              '## 🎮 Game Directory',
+              f'**{len(games)} games** — automatically listed, newest updated first.',
+              ''
+          ]
+
+          if not games:
+              lines.append('No HTML games found yet.')
+
+          for timestamp, path in games:
+              title = path.stem.replace('-', ' ').replace('_', ' ').title()
+              url = base + quote(path.as_posix(), safe='/')
+              date = (
+                  datetime.fromtimestamp(timestamp, my_time).strftime('%d %b %Y')
+                  if timestamp else ''
+              )
+              suffix = f' — updated {date}' if date else ''
+              lines.append(f'- [{title}]({url}){suffix}')
+
+          lines.extend([
+              '',
+              '_This list is automatically updated by GitHub Actions._',
+              end
+          ])
+
+          directory = '\n'.join(lines)
+          readme = Path('README.md')
+          original = (
+              readme.read_text(encoding='utf-8')
+              if readme.exists() else ''
+          )
+
+          if start in original and end in original:
+              before = original.split(start, 1)[0].rstrip()
+              after = original.split(end, 1)[1].lstrip('\n')
+              updated = (
+                  (before + '\n\n' if before else '')
+                  + directory + '\n' + after
+              )
+          else:
+              updated = (
+                  (original.rstrip() + '\n\n' if original.strip() else '')
+                  + directory + '\n'
+              )
+
+          if updated != original:
+              readme.write_text(updated, encoding='utf-8')
+          PY
+
+      - name: Save updated README
+        shell: bash
+        run: |
+          git add README.md
+          if git diff --cached --quiet; then
+            echo 'Directory is already up to date.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Automatically update game directory'
+          git push
